@@ -1,0 +1,249 @@
+#!/bin/sh
+#
+# Copyright (c) 2000 University of Cambridge Computer Laboratory.
+#
+# Distributed as part of SWARM with permission.
+#
+# Updates:
+#
+# (25/10/1999) Rolf Neugebauer (neugebar@dcs.gla.ac.uk): Added support for distribution versions
+# (07/05/2000) Eric (emschwar@rmi.net): Added debian release support
+
+
+# Compute architecture we are running on
+
+# The user can force the result by setting the environment variable
+# SYS_ARCH_* as appropriate.
+
+# Change: -binv reports the version of the OS (i.e., under Linux the version of the distribution)
+#         -kbinv reports the kernel version
+
+
+USAGE='echo 1>&2 "Usage: `basename $0` [ -r | -k | -bin | -kbin | -binv | -kbinv ]
+	-r      reports valid architectures
+	-k      reports the kernel architecture
+	-bin    reports architecture and OS
+	-kbin   reports kernel architecure and OS
+	-binv   same as -bin, but with OS version number appended
+	-kbinv  same as -kbin, but with kernel version number appended"'
+
+# Use 'eval "$USAGE"' to print the usage string (don't execute basename unless needed).
+
+
+valid="alpha arm arm32 hp9000s300 hp9000s700 hp9000s800 ix86 mips sun3 sun3x sun4 sun4c sun4d sun4e sun4m sun4u vax"
+
+if [ -x /bin/uname ]
+then
+    uname=/bin/uname
+elif [ -x /usr/bin/uname ]
+then
+    uname=/usr/bin/uname
+fi
+
+# If the variable SYS_ARCH_SET is set to 1, we are being invited to set values
+# in the environment for the benefit of future calls. Other arguments should be
+# ignored in this case, since we will have been called as a "." command. Also
+# must be careful not to "exit".
+
+# Otherwise decode the arguments, and return values directly if they are set
+# in the environment.
+
+if	[ "$SYS_ARCH_SET" != "1" ]
+then
+	arch="$SYS_ARCH_USER"
+	karch="$SYS_ARCH_KERNEL"
+	bin="$SYS_ARCH_BIN"
+	kbin="$SYS_ARCH_KBIN"
+	version="$SYS_ARCH_VERSION"
+	case $# in
+	0)	level=user
+		case "$arch" in ?*) echo "$arch"; exit 0;; esac
+		;;
+	1)	case "$1" in
+		-r)	echo $valid
+			exit 0
+			;;
+		-k)	level=kernel
+			case "$karch" in ?*) echo "$karch"; exit 0;; esac
+			;;
+		-bin)	level=bin
+			case "$bin" in ?*) echo "$bin"; exit 0;; esac
+			;;
+		-kbin)	level=kbin
+			case "$kbin" in ?*) echo "$kbin"; exit 0;; esac
+			;;
+		-binv)	level=binv
+			case "${bin}_$version" in ?*_?*) echo "${bin}_$version"; exit 0;; esac
+			;;
+		-kbinv)	level=kbinv
+			case "${kbin}_$version" in ?*_?*) echo "${kbin}_$version"; exit 0;; esac
+			;;
+		*)	eval "$USAGE";
+			exit 2
+			;;
+		esac ;;
+	*)	eval "$USAGE";
+		exit 2 ;;
+	esac
+fi
+
+# Now get the answers using the uname program.
+
+set `$uname -s -r -m`
+
+system=$1
+version=$2
+machine=$3
+
+case "$version" in
+[Vv][0-9]*)	version=`expr "$version" : ".\(.*\)"`;;
+esac
+
+case "$system" in
+
+HP-UX)		case "$machine" in
+		9000/3*)	arch=hp9000s300; bin=hp300_hpux;;
+		9000/7*)	arch=hp9000s700; bin=hp700_hpux;;
+		9000/8*)	arch=hp9000s800; bin=hp800_hpux;;
+		*)		echo 1>&2 "Unknown $system machine $machine"; exit 3;;
+		esac
+		karch=$arch
+		kbin=$bin
+		os_version=$version
+		k_version=$version;;
+
+OSF1)		case "$machine" in
+		alpha)		arch=alpha; bin=alpha_osf1;;
+		*)		echo 1>&2 "Unknown $system machine $machine"; exit 3;;
+		esac
+		karch=$arch
+		kbin=$bin
+		os_version=$version
+		k_version=$version;;
+
+riscix)		case "$machine" in
+		arm)		arch=arm; bin=arm_riscix;;
+		*)		echo 1>&2 "Unknown $system machine $machine"; exit 3;;
+		esac
+		karch=$arch
+		kbin=$bin
+		os_version=$version
+		k_version=$version;;
+
+SunOS)		os=sunos
+		case "$machine" in
+		sun3)		arch=sun3; bin=sun3_$os; karch=sun3;  kbin=sun3_$os;;
+		sun3x)		arch=sun3; bin=sun3_$os; karch=sun3x; kbin=sun3x_$os;;
+		sun4)		arch=sun4; bin=sun4_$os; karch=sun4;  kbin=sun4_$os;;
+		sun4c)		arch=sun4; bin=sun4_$os; karch=sun4c; kbin=sun4c_$os;;
+		sun4d)		arch=sun4; bin=sun4_$os; karch=sun4d; kbin=sun4d_$os;;
+		sun4e)		arch=sun4; bin=sun4_$os; karch=sun4e; kbin=sun4e_$os;;
+		sun4m)		arch=sun4; bin=sun4_$os; karch=sun4m; kbin=sun4m_$os;;
+		sun4u)		arch=sun4; bin=sun4_$os; karch=sun4u; kbin=sun4u_$os;;
+		tp_s2)		arch=sun4; bin=sun4_$os; karch=sun4m; kbin=sun4m_$os;;
+		i86pc)          arch=ix86; bin=ix86_$os; karch=ix86;  kbin=ix86_$os;;
+		*)		echo 1>&2 "Unknown $system machine $machine"; exit 3;;
+		esac
+		os_version=$version
+		k_version=$version;;
+
+ULTRIX*)	case "$machine" in
+		MIPS|RISC)	arch=mips; bin=mips_ultrix;;
+		VAX)		arch=vax; bin=vax_ultrix;;
+		*)		echo 1>&2 "Unknown $system machine $machine"; exit 3;;
+		esac
+		karch=$arch
+		kbin=$bin
+		os_version=$version
+		k_version=$version;;
+
+Linux)		case "$machine" in
+		alpha)		arch=$machine; bin=${machine}_linux;;
+		i[3456]86)	arch=ix86; machine=$arch; bin=${machine}_linux;;
+		sparc)		arch=$machine; bin=${machine}_linux;;
+		*)		echo 1>&2 "Unknown $system machine $machine"; exit 3;;
+		esac
+		# work out Linux version. On RedHat we check for /etc/redhat-release
+		if [ -f /etc/redhat-release ]
+		then
+		    rh_release=`cat /etc/redhat-release`
+		    os_version=rh`expr "$rh_release" : '[^.]*\([0-9]\.[0-9]\)*'`
+		elif [ -f /etc/SuSE-release ] 
+		then
+		    suse_release=`cat /etc/SuSE-release`
+		    os_version=suse`expr "$suse_release" : '[^.]*\([0-9]\.[0-9]\)*'`
+ 		elif [ -f /etc/debian_version ]
+ 		then
+ 		    debian_release=`cat /etc/debian_version`
+ 		    os_version=$debian_release
+		else
+		    echo 1>&2 "Unknown Linux Distribution"; exit 3
+		fi
+		karch=$arch
+		kbin=$bin
+		k_version=$version;;
+
+FreeBSD)	case "$machine" in
+		i[3456]86)	arch=ix86; machine=$arch; bin=${machine}_freebsd;;
+		*)		echo 1>&2 "Unknown $system machine $machine"; exit 3;;
+		esac
+		# version on FreeBSD can be something like: 2.2.6-STABLE.
+		# We are only interested in the 2.2.6 part
+		case "$version" in
+		*-*)  version=`expr "$version" : '\(.*\)-[A-Z]*'`;;
+		esac
+		karch=$arch
+		kbin=$bin
+		os_version=$version
+		k_version=$version;;
+
+IRIX|IRIX64)	arch=`uname -p`;
+		case "$arch+$machine" in
+		mips+*)		bin=${arch}_irix;;
+                *)              echo 1>&2 "Unknown $system machine $machine / $arch"; exit 3;;
+                esac
+                karch=$arch
+                kbin=$bin
+		os_version=$version
+		k_version=$version;;
+
+Darwin)         arch=`uname -p`
+                karch=$arch
+                bin=${arch}_darwin
+                kbin=$bin
+                os_version=`uname -r`
+                k_version=$os_version;;
+
+NetBSD)         arch=`$uname -p`
+		case "$arch" in
+		i[3456]86)       arch=ix86;;
+		esac
+                karch=$arch
+                bin=${arch}_netbsd
+                kbin=$bin
+		os_version=`$uname -r`
+                k_version=$os_version;;
+
+*)		echo 1>&2 "Unknown operating system: $system"; exit 3;;
+esac
+
+# Finally, either set the environment (and unset the variable which asked for
+# that to be done), or return the answer.
+
+if	[ "$SYS_ARCH_SET" != "1" ]
+then	case $level in
+	user)	echo $arch;;
+	kernel)	echo $karch;;
+	bin)	echo $bin;;
+	kbin)	echo $kbin;;
+	binv)	echo ${bin}_$os_version;;
+	kbinv)	echo ${kbin}_$k_version;;
+	esac
+else	SYS_ARCH_USER=$arch
+	SYS_ARCH_KERNEL=$karch
+	SYS_ARCH_BIN=$bin
+	SYS_ARCH_KBIN=$kbin
+	SYS_ARCH_VERSION=$os_version
+	export SYS_ARCH_USER SYS_ARCH_KERNEL SYS_ARCH_BIN SYS_ARCH_KBIN SYS_ARCH_VERSION
+	unset SYS_ARCH_SET USAGE
+fi

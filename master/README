@@ -1,0 +1,55 @@
+SoftWare ARM version 0.51
+===========================
+
+Copyright (C) 2000 by Michael Dales. This software is licenced under the Gnu
+Public Licence (version 2.0). See COPYING for more details.
+
+--------------------------
+
+Note: For a more detailed description on SWARM see ./doc/swarm.ps
+
+SWARM (SoftWare ARM) is a simple emulator of an ARM processor using an ARM6 
+core. The aim of this tool is not simply to let the user run ARM binaries on
+another platform, but rather to examine the architecture of an ARM processor.
+Thus SWARM models the full datapath for an ARM7M core, and uses a realistic
+memory hierarchy (registers, cache, main memory).
+
+There are lots of features missing from SWARM at present, but enough to run
+simple programs. The recommended way of generating binaries for SWARM is
+using gcc. A simple bare gcc library is provided (not that it doesn't include
+any of libc - though some parts of the NetBSD 1.4.1 libc have been made to
+run on SWARM).
+
+All condition codes are supported. Supported instructions are:
+
+* All data processing instructions.
+* Branch with and without link.
+* Single word/byte data transfers (including PC).
+* Multiple load/store transfers (including PC).
+* Moves between CPSR/SPSR and general register (either direction).
+* SWI calls to emulated code and to C functions passed to the emulator class.
+* 32 and 64 bit fast multiply instructions. 
+* Coprocessor register transfers, memory access, and data operations.
+
+In addition the processor class includes an OS timer and an interrupt 
+controllor to allow for simple OS implementations to be ran on SWARM. 
+
+A lot of work still needs to be done, but the author currently has more 
+pressing research to do, so for the short term functionality will only be 
+added on an "as needed" basis. Feel free to submit patches for SWARM and I
+will incorporate them and credit the author in the change log.
+
+Currently SWARM will run on Linux for ix86 and Alpha. It should build
+under MSVC++, but the included project files are out of date, and I
+don't currently have access to MSVC++. 
+
+For information on the test applications see ./test_apps/README
+
+Thanks go to ARM Ltd. (http://www.arm.com/) for inviting me to visit, and
+for providing me with a copy of the ARM Architecture Reference Manual. 
+Cheers guys!
+
+For the latest and greatest on SWARM see:
+    http://www.dcs.gla.ac.uk/~michael/phd/swarm.html
+
+----------------------------

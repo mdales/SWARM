@@ -1,0 +1,14 @@
+The test apps are quite simple. Here's a brief description of what they do. 
+Unless specified they don't produce any output, but you can look at /tmp/mem
+to see the final state of the simulator's memory.
+
+test1 - Simple Fibonnaci generator.
+
+test2 - Reads in data/coffee.bmp and applies an edge detection filter to the
+        image. The results can be found in /tmp/coffee.bmp.
+
+test3 - Test of memcpy.
+
+test4 - Simple printf test.
+
+filter - Similar to test2 but does sharpen.

@@ -1,0 +1,83 @@
+*********************************************
+SWARM - A arm emulator
+Copyright 2000 Michael Dales
+
+Document:
+  Author: Michael Dales and C Hanish Menon 
+  Date  : 27 Sep 2001
+*********************************************
+
+Provides
+--------
+  Arm7v3 core.
+  System CoProcessor (which supports ProcessorID and Caching).
+
+RAM (10MB)           at 0x00000000
+Timer Logic          at 0x90000000
+Interrupt Controller at 0x90050000
+Uart Logic           at 0x90081000
+LCD Controller       at 0x90100000
+
+Compile Options
+---------------
+
+The following preprocessor options can be set in the Makefile:
+
+* -DSWARM_SWI_HANDLER - Turns on the machanicsm in SWARM to execute 
+   certain SWIs internally. Used for I/O with the libc user with the 
+   test apps. Default is on.
+* -DLIBC_SUPPORT - Turns on internal handlers used by the libc. Default
+   is on.
+* -DDEBUGGER - Activates a simple debugger control that lets you step 
+   through what SWARM is executing. Default is off.
+* -DDEBUG_MEM - Turns on memory tracing which can then be analysed using
+   the memcheck.pl script for memory leaks. Default is off.
+* -DQUIET - Disables a cycle by cycle dump of the processor state. Default
+   is on.
+
+
+Supports
+--------
+  binary image loading - always loaded to Mem Address 0x0
+  srec image loading - loaded to specified addresses
+
+
+Interrupt Controller
+--------------------
+* It provides 32 Input Interrupt pins (0 - 31) which can be
+  used to Pheriperals/Devices to inform Interrupt Ctrl that
+  it requires to notify the Processor about some event. The
+  Interrupt Ctrl inturn will trigger the IRQ and or FIQ as
+  required to the Processor.
+* The Level Register is used to specify whether a Interrupt 
+  represents a IRQ or FIQ from ARM processor perspective.
+* A mask register is provided to allow software to specify 
+  as to which Interrupts should be considered active at any 
+  given time.
+* The IRQ Pending and FIQ Pending registers can be used to
+  verify has to which Input Interrupt line triggered the IRQ
+  and or FIQ respectively, this inturn helps the software know
+  has to which Pheriperal/Device made the request.
+  
+  
+OS Timer
+--------
+* It sets the Interrupt Controllers IRQ pins 26,27,28 and 29.
+* Provides a WatchDog timer logic (If enabled uses 4th Timer
+  Match register to help decide whether to trigger a reset or 
+  not.
+* Provides for 4 Timers, by means of 4 Match Registers which are
+  compared against the internal Count Register.
+
+  
+LCD Controller
+--------------
+* It will use Interrupt pin 25 when the LCD logic is put in place
+
+
+UART Controller
+---------------
+* It will use Interrupt pin 24 of the Interrupt Ctrl, when the UART 
+  logic is updated to use interrupts.
+
+

@@ -1,0 +1,717 @@
+%!
+%%BoundingBox: 34 601 489 772
+%%Title: mem
+%%CreationDate: Thu Apr 13 11:12:14 2000
+%%Creator: Tgif-4.1.16 by William Chia-Wei Cheng (william@cs.UCLA.edu)
+
+/tgifdict 53 dict def
+tgifdict begin
+
+/tgifarrowtipdict 8 dict def
+tgifarrowtipdict /mtrx matrix put
+
+/TGAT % tgifarrowtip
+ { tgifarrowtipdict begin
+      /dy exch def
+      /dx exch def
+      /h exch def
+      /w exch def
+      /y exch def
+      /x exch def
+      /savematrix mtrx currentmatrix def
+      x y translate
+      dy dx atan rotate
+      0 0 moveto
+      w neg h lineto
+      w neg h neg lineto
+      savematrix setmatrix
+   end
+ } def
+
+/TGMAX
+ { exch dup 3 1 roll exch dup 3 1 roll gt { pop } { exch pop } ifelse
+ } def
+/TGMIN
+ { exch dup 3 1 roll exch dup 3 1 roll lt { pop } { exch pop } ifelse
+ } def
+/TGSW { stringwidth pop } def
+
+/bd { bind def } bind def
+
+/GS { gsave } bd
+/GR { grestore } bd
+/NP { newpath } bd
+/CP { closepath } bd
+/CHP { charpath } bd
+/CT { curveto } bd
+/L { lineto } bd
+/RL { rlineto } bd
+/M { moveto } bd
+/RM { rmoveto } bd
+/S { stroke } bd
+/F { fill } bd
+/TR { translate } bd
+/RO { rotate } bd
+/SC { scale } bd
+/MU { mul } bd
+/DI { div } bd
+/DU { dup } bd
+/NE { neg } bd
+/AD { add } bd
+/SU { sub } bd
+/PO { pop } bd
+/EX { exch } bd
+/CO { concat } bd
+/CL { clip } bd
+/EC { eoclip } bd
+/EF { eofill } bd
+/IM { image } bd
+/IMM { imagemask } bd
+/ARY { array } bd
+/SG { setgray } bd
+/RG { setrgbcolor } bd
+/SD { setdash } bd
+/W { setlinewidth } bd
+/SM { setmiterlimit } bd
+/SLC { setlinecap } bd
+/SLJ { setlinejoin } bd
+/SH { show } bd
+/FF { findfont } bd
+/MS { makefont setfont } bd
+/AR { arcto 4 {pop} repeat } bd
+/CURP { currentpoint } bd
+/FLAT { flattenpath strokepath clip newpath } bd
+/TGSM { tgiforigctm setmatrix } def
+/TGRM { savematrix setmatrix } def
+
+end
+
+tgifdict begin
+/tgifsavedpage save def
+
+1 SM
+1 W
+
+0 SG
+
+72 0 MU 72 11 MU TR
+72 128 DI 100.000 MU 100 DI DU NE SC
+
+GS
+
+/tgiforigctm matrix currentmatrix def
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      192 64 M
+      192 336 L
+   TGSM
+   2 W
+   S
+   1 W
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      320 64 M
+      320 336 L
+   TGSM
+   2 W
+   S
+   1 W
+GR
+
+% TEXT
+NP
+0 SG
+   GS
+      1 W
+      64 56 M
+      GS
+            0 SG
+            /Helvetica FF [20 0 0 -20 0 0] MS
+            (main memory) SH
+      GR
+   GR
+
+% TEXT
+NP
+0 SG
+   GS
+      1 W
+      216 56 M
+      GS
+            0 SG
+            /Helvetica FF [20 0 0 -20 0 0] MS
+            (processor) SH
+      GR
+   GR
+
+% TEXT
+NP
+0 SG
+   GS
+      1 W
+      344 56 M
+      GS
+            0 SG
+            /Helvetica FF [20 0 0 -20 0 0] MS
+            (core) SH
+      GR
+   GR
+
+% TEXT
+NP
+0 SG
+   GS
+      1 W
+      376 96 M
+      GS
+        GS
+        0
+            /Helvetica FF [14 0 0 -14 0 0] MS
+            (issue read) TGSW 
+        AD
+        GR
+      2 DI NE 0 RM
+            0 SG
+            /Helvetica FF [14 0 0 -14 0 0] MS
+            (issue read) SH
+      GR
+      0 18 RM
+      GS
+        GS
+        0
+            /Helvetica FF [14 0 0 -14 0 0] MS
+            (address) TGSW 
+        AD
+        GR
+      2 DI NE 0 RM
+            0 SG
+            /Helvetica FF [14 0 0 -14 0 0] MS
+            (address) SH
+      GR
+   GR
+
+% TEXT
+NP
+0 SG
+   GS
+      1 W
+      224 136 M
+      GS
+            0 SG
+            /Helvetica FF [14 0 0 -14 0 0] MS
+            (In Cache?) SH
+      GR
+   GR
+
+% TEXT
+NP
+0 SG
+   GS
+      1 W
+      112 168 M
+      GS
+            0 SG
+            /Helvetica FF [14 0 0 -14 0 0] MS
+            (Read) SH
+      GR
+   GR
+
+% TEXT
+NP
+0 SG
+   GS
+      1 W
+      208 200 M
+      GS
+            0 SG
+            /Helvetica FF [14 0 0 -14 0 0] MS
+            (Write to cache) SH
+      GR
+   GR
+
+% TEXT
+NP
+0 SG
+   GS
+      1 W
+      344 232 M
+      GS
+            0 SG
+            /Helvetica FF [14 0 0 -14 0 0] MS
+            (Data on input) SH
+      GR
+   GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      344 112 M
+      16 -48 atan DU cos 10.000 MU 296 exch SU
+      exch sin 10.000 MU 128 exch SU L
+   TGSM
+   2 W
+   S
+   1 W
+GR
+GS
+   TGSM
+   NP
+      296 128 10.000 4.000 -48 16 TGAT
+   1 SG CP F
+   0 SG
+   NP
+      296 128 10.000 4.000 -48 16 TGAT
+   CP F
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      216 136 M
+      24 -64 atan DU cos 10.000 MU 152 exch SU
+      exch sin 10.000 MU 160 exch SU L
+   TGSM
+   2 W
+   S
+   1 W
+GR
+GS
+   TGSM
+   NP
+      152 160 10.000 4.000 -64 24 TGAT
+   1 SG CP F
+   0 SG
+   NP
+      152 160 10.000 4.000 -64 24 TGAT
+   CP F
+GR
+
+% TEXT
+NP
+0 SG
+   GS
+      1 W
+      168 136 M
+      GS
+            0 SG
+            /Helvetica FF [14 0 0 -14 0 0] MS
+            (no) SH
+      GR
+   GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      264 144 M
+      72 120 atan DU cos 10.000 MU 384 exch SU
+      exch sin 10.000 MU 216 exch SU L
+   TGSM
+   2 W
+   S
+   1 W
+GR
+GS
+   TGSM
+   NP
+      384 216 10.000 4.000 120 72 TGAT
+   1 SG CP F
+   0 SG
+   NP
+      384 216 10.000 4.000 120 72 TGAT
+   CP F
+GR
+
+% TEXT
+NP
+0 SG
+   GS
+      1 W
+      264 168 M
+      GS
+            0 SG
+            /Helvetica FF [14 0 0 -14 0 0] MS
+            (yes) SH
+      GR
+   GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      152 168 M
+      24 48 atan DU cos 10.000 MU 200 exch SU
+      exch sin 10.000 MU 192 exch SU L
+   TGSM
+   2 W
+   S
+   1 W
+GR
+GS
+   TGSM
+   NP
+      200 192 10.000 4.000 48 24 TGAT
+   1 SG CP F
+   0 SG
+   NP
+      200 192 10.000 4.000 48 24 TGAT
+   CP F
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      304 208 M
+      16 32 atan DU cos 10.000 MU 336 exch SU
+      exch sin 10.000 MU 224 exch SU L
+   TGSM
+   2 W
+   S
+   1 W
+GR
+GS
+   TGSM
+   NP
+      336 224 10.000 4.000 32 16 TGAT
+   1 SG CP F
+   0 SG
+   NP
+      336 224 10.000 4.000 32 16 TGAT
+   CP F
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      640 64 M
+      640 336 L
+   TGSM
+   2 W
+   S
+   1 W
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      768 64 M
+      768 336 L
+   TGSM
+   2 W
+   S
+   1 W
+GR
+
+% TEXT
+NP
+0 SG
+   GS
+      1 W
+      512 56 M
+      GS
+            0 SG
+            /Helvetica FF [20 0 0 -20 0 0] MS
+            (main memory) SH
+      GR
+   GR
+
+% TEXT
+NP
+0 SG
+   GS
+      1 W
+      664 56 M
+      GS
+            0 SG
+            /Helvetica FF [20 0 0 -20 0 0] MS
+            (processor) SH
+      GR
+   GR
+
+% TEXT
+NP
+0 SG
+   GS
+      1 W
+      792 56 M
+      GS
+            0 SG
+            /Helvetica FF [20 0 0 -20 0 0] MS
+            (core) SH
+      GR
+   GR
+
+% TEXT
+NP
+0 SG
+   GS
+      1 W
+      824 96 M
+      GS
+        GS
+        0
+            /Helvetica FF [14 0 0 -14 0 0] MS
+            (issue write) TGSW 
+        AD
+        GR
+      2 DI NE 0 RM
+            0 SG
+            /Helvetica FF [14 0 0 -14 0 0] MS
+            (issue write) SH
+      GR
+      0 18 RM
+      GS
+        GS
+        0
+            /Helvetica FF [14 0 0 -14 0 0] MS
+            (address) TGSW 
+        AD
+        GR
+      2 DI NE 0 RM
+            0 SG
+            /Helvetica FF [14 0 0 -14 0 0] MS
+            (address) SH
+      GR
+   GR
+
+% TEXT
+NP
+0 SG
+   GS
+      1 W
+      664 136 M
+      GS
+            0 SG
+            /Helvetica FF [14 0 0 -14 0 0] MS
+            (Note address) SH
+      GR
+   GR
+
+% TEXT
+NP
+0 SG
+   GS
+      1 W
+      800 232 M
+      GS
+            0 SG
+            /Helvetica FF [14 0 0 -14 0 0] MS
+            (issue data) SH
+      GR
+   GR
+
+% TEXT
+NP
+0 SG
+   GS
+      1 W
+      560 168 M
+      GS
+            0 SG
+            /Helvetica FF [14 0 0 -14 0 0] MS
+            (NULL) SH
+      GR
+   GR
+
+% TEXT
+NP
+0 SG
+   GS
+      1 W
+      704 256 M
+      GS
+        GS
+        0
+            /Helvetica FF [14 0 0 -14 0 0] MS
+            (Use noted) TGSW 
+        AD
+        GR
+      2 DI NE 0 RM
+            0 SG
+            /Helvetica FF [14 0 0 -14 0 0] MS
+            (Use noted) SH
+      GR
+      0 18 RM
+      GS
+        GS
+        0
+            /Helvetica FF [14 0 0 -14 0 0] MS
+            (address) TGSW 
+        AD
+        GR
+      2 DI NE 0 RM
+            0 SG
+            /Helvetica FF [14 0 0 -14 0 0] MS
+            (address) SH
+      GR
+   GR
+
+% TEXT
+NP
+0 SG
+   GS
+      1 W
+      560 296 M
+      GS
+            0 SG
+            /Helvetica FF [14 0 0 -14 0 0] MS
+            (write) SH
+      GR
+   GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      792 104 M
+      16 -40 atan DU cos 10.000 MU 752 exch SU
+      exch sin 10.000 MU 120 exch SU L
+   TGSM
+   2 W
+   S
+   1 W
+GR
+GS
+   TGSM
+   NP
+      752 120 10.000 4.000 -40 16 TGAT
+   1 SG CP F
+   0 SG
+   NP
+      752 120 10.000 4.000 -40 16 TGAT
+   CP F
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      656 136 M
+      16 -56 atan DU cos 10.000 MU 600 exch SU
+      exch sin 10.000 MU 152 exch SU L
+   TGSM
+   2 W
+   S
+   1 W
+GR
+GS
+   TGSM
+   NP
+      600 152 10.000 4.000 -56 16 TGAT
+   1 SG CP F
+   0 SG
+   NP
+      600 152 10.000 4.000 -56 16 TGAT
+   CP F
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      608 168 M
+      24 88 atan DU cos 10.000 MU 696 exch SU
+      exch sin 10.000 MU 192 exch SU L
+   TGSM
+   2 W
+   S
+   1 W
+GR
+GS
+   TGSM
+   NP
+      696 192 10.000 4.000 88 24 TGAT
+   1 SG CP F
+   0 SG
+   NP
+      696 192 10.000 4.000 88 24 TGAT
+   CP F
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      720 192 M
+      24 80 atan DU cos 10.000 MU 800 exch SU
+      exch sin 10.000 MU 216 exch SU L
+   TGSM
+   2 W
+   S
+   1 W
+GR
+GS
+   TGSM
+   NP
+      800 216 10.000 4.000 80 24 TGAT
+   1 SG CP F
+   0 SG
+   NP
+      800 216 10.000 4.000 80 24 TGAT
+   CP F
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      792 232 M
+      16 -48 atan DU cos 10.000 MU 744 exch SU
+      exch sin 10.000 MU 248 exch SU L
+   TGSM
+   2 W
+   S
+   1 W
+GR
+GS
+   TGSM
+   NP
+      744 248 10.000 4.000 -48 16 TGAT
+   1 SG CP F
+   0 SG
+   NP
+      744 248 10.000 4.000 -48 16 TGAT
+   CP F
+GR
+
+% POLY/OPEN-SPLINE
+0 SG
+GS
+   NP
+      664 264 M
+      24 -64 atan DU cos 10.000 MU 600 exch SU
+      exch sin 10.000 MU 288 exch SU L
+   TGSM
+   2 W
+   S
+   1 W
+GR
+GS
+   TGSM
+   NP
+      600 288 10.000 4.000 -64 24 TGAT
+   1 SG CP F
+   0 SG
+   NP
+      600 288 10.000 4.000 -64 24 TGAT
+   CP F
+GR
+
+GR
+tgifsavedpage restore
+end
+showpage
+
+%MatchingCreationDate: Thu Apr 13 11:12:14 2000

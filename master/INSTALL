@@ -1,0 +1,79 @@
+SoftWare ARM version 0.27
+===========================
+
+Copyright (C) 2000 by Michael Dales. This software is licenced under the Gnu
+Public Licence (version 2.0). See COPYING for more details.
+
+--------------------------
+
+There are currently 4 supported platforms for SWARM:
+
+* GNU C++ on ix86 Linux
+* GNU C++ on Alpha Linux
+* Compaq C++ on Alpha Linux
+* Microsoft Visual C++ on Windows
+
+Currently the test applications for running on top of SWARM require to be 
+built using ARM gcc.
+
+--------------------------
+*** Building SWARM using GNU C++ on either Alpha or ix86 Linux.
+
+Assuimg $SWARM is where you installed swarm:
+
+	cd $SWARM/src
+	make
+
+There should now be a swarm executable in the src directory. To build 
+swarm with debugging symbols type "make debug" instead of just "make".
+
+--------------------------
+*** Building SWARM using Compaq C++ on Alpha Linux
+
+This requires you to have downloaded and installed the Beta release of the 
+Compaq C++ compiler tools for Alpha Linux. Assuimg $SWARM is where you 
+installed swarm:
+
+	cd $SWARM/src
+	make alpha-cxx
+
+There should now be a swarm executable in the src directory. To build 
+swarm with debugging symbols type "make debug-alpha-cxx" instead of 
+just "make alpha-cxx".
+
+--------------------------
+*** Building SWARM using Microsoft Visual C++ on Windows
+
+Assuimg $SWARM is where you installed swarm, open $SWARM/msvc/swarm.dsw
+in Microsoft Visual C++. The project should simply build.
+
+--------------------------
+*** Building the utility programs - Linux only
+
+Assuimg $SWARM is where you installed swarm:
+
+	cd $SWARM/bin
+	make
+
+A directory should be created in $SWARM/bin for your architecture containing
+the compiled files.
+
+--------------------------
+*** Building the test applications
+
+Assuimg $SWARM is where you installed swarm:
+
+	cd $SWARM/test_apps
+	make
+
+Currently these assume that the ARM targetted GNU tools are in a specific
+place. You should edit $SWARM/test_apps/Makefile and update the lines:
+
+CC = /usr/local/gnuarm/bin/arm-unknown-coff-gcc
+LD = /usr/local/gnuarm/bin/arm-unknown-coff-ld 
+OC = /usr/local/gnuarm/bin/arm-unknown-coff-objcopy
+
+Change these to provide the correct location for your ARM tools.
+
+
+--------------------------

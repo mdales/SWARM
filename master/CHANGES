@@ -1,0 +1,1147 @@
+#00063 michael pp Michael Dales (michael@dcs.gla.ac.uk) Mon Dec 10 11:36:31 GMT 2001
+------------------------------------------------------------------------------------
+Updated changes so that bah/pedant runs.
+
+src/core.cpp                       -- Changed file.
+src/intctrl.cpp                    -- Changed file.
+src/ostimer.cpp                    -- Changed file.
+
+#00062 michael pp Michael Dales (michael@dcs.gla.ac.uk) Fri Nov 16 16:59:05 GMT 2001
+------------------------------------------------------------------------------------
+Added parts to libc required to let me do compile the C output from C-Intercal
+up for SWARM.
+
+src/Makefile                       -- Changed file.
+src/core.cpp                       -- Changed file.
+test_apps/Makefile                 -- Changed file.
+test_apps/libc/Makefile            -- Changed file.
+test_apps/libc/gen/Makefile        -- Changed file.
+test_apps/libc/gen/ctype_.c        ++ NEW FILE
+test_apps/libc/gen/sleep.c         ++ NEW FILE
+test_apps/libc/gen/time.c          ++ NEW FILE
+test_apps/libc/include/assert.h    ++ NEW FILE
+test_apps/libc/include/ctype.h     ++ NEW FILE
+test_apps/libc/include/inttypes.h  -- Changed file.
+test_apps/libc/include/stdio.h     -- Changed file.
+test_apps/libc/include/time.h      ++ NEW FILE
+test_apps/libc/stdio/Makefile      -- Changed file.
+test_apps/libc/stdio/fgetc.c       ++ NEW FILE
+test_apps/libc/stdio/fgets.c       ++ NEW FILE
+test_apps/libc/stdio/fputs.c       ++ NEW FILE
+test_apps/libc/stdio/getchar.c     ++ NEW FILE
+test_apps/libc/stdio/putchar.c     ++ NEW FILE
+test_apps/libc/stdio/puts.c        ++ NEW FILE
+test_apps/libc/stdlib/Makefile     -- Changed file.
+test_apps/libc/stdlib/atoi.c       ++ NEW FILE
+test_apps/libc/stdlib/rand.c       ++ NEW FILE
+test_apps/libc/stdlib/strtol.c     ++ NEW FILE
+test_apps/libc/stdlib/strtoul.c    ++ NEW FILE
+test_apps/libc/string/Makefile     -- Changed file.
+test_apps/libc/string/strtok.c     ++ NEW FILE
+test_apps/modetest.S               ++ NEW FILE
+
+#00062 michael pp Michael Dales (michael@dcs.gla.ac.uk) Sun Sep 30 14:43:24 BST 2001
+------------------------------------------------------------------------------------
+Another attempt to fix brokenness in the movs/ldm^ instructions.
+
+src/Makefile                       -- Changed file.
+src/core.cpp                       -- Changed file.
+test_apps/Makefile                 -- Changed file.
+test_apps/modetest.S               ++ NEW FILE
+
+#00061 michael pp Michael Dales (michael@dcs.gla.ac.uk) Thu Sep 27 10:41:39 BST 2001
+------------------------------------------------------------------------------------
+Contains lots of code by Hanish Menon [www.hanishkvc.com] to enable uCLinux to
+work on SWARM. Here is a list of his changes:
+
+* Working on uClinux, I found that Interrupts where getting disabled even thou
+  they had been enabled, when working on Interrupt handlers. 
+  Looking further on I found that for LDMxx instructions which use PC and sets 
+  S bit, it doesn't restore CPSR from the required SPSR. So I have added a fix
+  to DecodeMRTLoad function to take care of it. Its based on my preliminary 
+  analysis of the SWARM code logic, so have to verify for absolute correctness 
+  later.
+
+* The SWI implementation provided by SWARM has been put in a 
+  #ifdef SWARM_EXTRA_FEATURES block, 
+  has it was conflicting with uClinux's swi implemenation. And also has its not
+  part of any standard ARM processor.
+
+* A simple debugger logic added. It allows one to set a breakpoint, dump 
+  state of processor core and coprocessors. Step thro one or more instructions
+  at a time. As part of it, added NextPC, DebugDumpCore and DebugDumpCoProc
+  functions.
+
+* Before calling the BarrelShifter logic, the shift distance was being checked
+  to be less than 32 using a ASSERT statement, I have replaced it and made a
+  message come up when ever it occurs.
+
+* If the memory address accessed is greater than the available memory, then
+  instead of quiting, I made it continue after showing the Processor DebugDump.
+  Maybe we should have it generate some exception, is it Data or Prefetch abort?
+
+* Added debug info regarding IRQ Disable bit and the busCurrentIRQ status.
+  The debug info added to intctrl and ostimer have been put like other
+  debug info within #ifndef QUIET blocks.
+
+* And finaly uClinux-arm kernel 2.4.4-xxx is working on swarm to a great extent.
+  Increased the Memory size to 12 MB from 10 MB, Giving 10 MB to applications 
+  and ramdisk. Remaining goes to kernel roughly, have to fit it better a bit, 
+  later.
+
+* Updated my UART Ctrl logic to use a PseudoTTY instead of the previous
+  logic where the stdin/stdout of SWARM was used has the interface to the 
+  UART, which was ugly has stdin/stdout of SWARM is used for other purposes
+  also.
+
+  As a result of this fix you can communicate to the UART on SWARM by
+  using the minicom or any other program which allows one to communicate 
+  with a serial or terminal logic. The slave pseudo terminal to communicate
+  with will be /dev/pts/XXX
+
+* Looking into uClinux, I realized that the IntCtrl in Swarm maintains 
+  the Interrupt Pending status only till the Device requesting the Interrupt
+  keeps the IRQ line active. And the OSTimer which currently uses the IRQ
+  mechanism inturn holds the IRQ request to IntCtrl only for one cycle.
+ 
+  So rather than updating the OSTimer to hold the Request till the driver
+  acknowledges to OSTimer, I updated the IntCtrl logic such that It maintains
+  the Interrupt in a Pending state until the driver clears the corresponding
+  Pending bit in the IntCtrl. The idea above being that with this mechanism, 
+  each and every device which use Interrupt mode of operation doesn't have 
+  to worry about holding the request till the driver acknowledges, instead 
+  the IntCtrl takes care of this automatically.
+
+* Looked into the Device/Pheriperal BUS definition and Usage logic and
+  based on it updated the same for the pheriperals that I added.
+  - Updated UART Ctrl bus definition to remove the RESET pin and 
+    Reduce the Interrupt Pins from 4 to 1. This single interrupt 
+    pin will be used later to notify the system about the status 
+    of the Transmit and Recieve buffers or FIFOs.
+  - Updated LCD Ctrl bus definition to remove the RESET pin and
+    Reduce the Interrupt Pins from 4 to 1. This single interupt
+    pin will be used to notify the system about any LCD Ctrl 
+    related events.
+  - Corrected a comment regarding OSTimer.addr pins.
+* Updated the logic in armproc.cpp wrt UART and LCD Ctrls so that
+  they can rise interrupts to the Interrupt Ctrl if required.
+* Updated certain messages and return values.
+
+* Added the srec loader
+* Updated the LCD controller address
+
+* ReIntroduced the Parse_Opts logic.
+* Will be adding support for SREC file loading.
+* Fixed a problem in the bin/Makefile 
+
+* Added support for a minimal UART controller.
+* Updated the earlier sample LCD controller which I had written wrt its Addr.
+
+* Looking into SWARM and the Device/Pheriperal interface logic in SWARM
+* Added a partial LCD Ctrl logic to test the interface logic
+
+In addition I updated a few things in his code to fix a problem he'd 
+highlighted with ldms.
+
+bin/Makefile                       -- Changed file.
+src/Makefile                       -- Changed file.
+src/README-INFO                    ++ NEW FILE
+src/armproc.cpp                    -- Changed file.
+src/armproc.h                      -- Changed file.
+src/core.cpp                       -- Changed file.
+src/core.h                         -- Changed file.
+src/intctrl.cpp                    -- Changed file.
+src/lcdctrl.cpp                    ++ NEW FILE
+src/lcdctrl.h                      ++ NEW FILE
+src/main.cpp                       -- Changed file.
+src/ostimer.cpp                    -- Changed file.
+src/ostimer.h                      -- Changed file.
+src/uartctrl.cpp                   ++ NEW FILE
+src/uartctrl.h                     ++ NEW FILE
+
+#00060 michael pp Michael Dales (michael@dcs.gla.ac.uk) Tue May 15 22:53:15 BST 2001
+------------------------------------------------------------------------------------
+Added cache invalivation functions to the system coprocessor.
+
+src/armproc.cpp                    -- Changed file.
+src/core.cpp                       -- Changed file.
+src/syscopro.cpp                   -- Changed file.
+src/syscopro.h                     -- Changed file.
+
+#00059 michael pp Michael Dales (michael@dcs.gla.ac.uk) Fri May 11 16:52:45 BST 2001
+------------------------------------------------------------------------------------
+Corrected the n-way set associative cache. Added functionality to the system
+co-processor to allow me to read the cycle counter, cache hit counter, and
+cache miss counter in an application, using register 11 with opcode 2 set to
+0, 1, and 2 respectively.
+
+src/armproc.cpp                    -- Changed file.
+src/setassoc.cpp                   -- Changed file.
+src/setassoc.h                     -- Changed file.
+src/swarm_types.h                  -- Changed file.
+src/syscopro.cpp                   -- Changed file.
+src/syscopro.h                     -- Changed file.
+test_apps/libc/include/profile.h   -- Changed file.
+test_apps/vtest.c                  -- Changed file.
+
+#00058 michael pp Michael Dales (michael@dcs.gla.ac.uk) Thu May 10 14:05:25 BST 2001
+------------------------------------------------------------------------------------
+Added a n-way set associative cache. Default is now 8k 4-way shared cache.
+
+src/Makefile                       -- Changed file.
+src/armproc.cpp                    -- Changed file.
+src/associative.cpp                -- Changed file.
+src/associative.h                  -- Changed file.
+src/cache.h                        -- Changed file.
+src/direct.cpp                     -- Changed file.
+src/direct.h                       -- Changed file.
+src/main.cpp                       -- Changed file.
+src/setassoc.cpp                   ++ NEW FILE
+src/setassoc.h                     ++ NEW FILE
+
+#00057 michael pp Michael Dales (michael@dcs.gla.ac.uk) Tue Apr 17 15:02:46 BST 2001
+------------------------------------------------------------------------------------
+Added an extra make option -native. Use this on an ARM machine to have data
+processing instructions checked against the real thing ran natively. This
+was used to solve several carry/overflow bugs. Madplay now works with 
+SWARM.
+
+bin/scripts/arch                   -- Changed file.
+src/Makefile                       -- Changed file.
+src/alu.cpp                        -- Changed file.
+src/core.cpp                       -- Changed file.
+src/core.h                         -- Changed file.
+src/main.cpp                       -- Changed file.
+src/swarm_types.h                  -- Changed file.
+
+#00056 michael pp Michael Dales (michael@dcs.gla.ac.uk) Thu Apr  5 18:13:08 BST 2001
+------------------------------------------------------------------------------------
+Major rework of memory usage. Used memory pools for the control structures
+in core and coprocessors, and used recycling for current/previous patterned
+structures. Filter test time reduced by 46% as a result.
+
+bin/scripts/memcheck.pl            -- Changed file.
+src/Makefile                       -- Changed file.
+src/armproc.cpp                    -- Changed file.
+src/copro.h                        -- Changed file.
+src/core.cpp                       -- Changed file.
+src/core.h                         -- Changed file.
+src/direct.cpp                     -- Changed file.
+src/libc.cpp                       -- Changed file.
+src/memory.cpp                     ++ NEW FILE
+src/memory.h                       ++ NEW FILE
+src/swarm_macros.h                 -- Changed file.
+src/syscopro.cpp                   -- Changed file.
+src/syscopro.h                     -- Changed file.
+test_apps/Makefile                 -- Changed file.
+test_apps/test6.c                  ++ NEW FILE
+test_apps/vtest.c                  -- Changed file.
+
+#00055 michael pp Michael Dales (michael@dcs.gla.ac.uk) Tue Feb 13 17:06:41 GMT 2001
+------------------------------------------------------------------------------------
+Small bug fixes on coprocessor reads.
+
+src/armproc.h                      -- Changed file.
+src/core.cpp                       -- Changed file.
+
+#00054 michael pp Michael Dales (michael@dcs.gla.ac.uk) Sun Jan 28 22:19:39 GMT 2001
+------------------------------------------------------------------------------------
+Fixed carry flag due to shifts. Finished adding half word transfers.
+
+src/alu.cpp                        -- Changed file.
+src/armproc.cpp                    -- Changed file.
+src/armproc.h                      -- Changed file.
+src/core.cpp                       -- Changed file.
+src/core.h                         -- Changed file.
+src/main.cpp                       -- Changed file.
+src/swarm_types.h                  -- Changed file.
+test_apps/test3.c                  -- Changed file.
+test_apps/test5.c                  -- Changed file.
+
+#00053 michael pp Michael Dales (michael@dcs.gla.ac.uk) Tue Jan 23 15:47:33 GMT 2001
+------------------------------------------------------------------------------------
+Debugged the mult instructions further. Test3 now does a large range
+of tests, which matched results with an SA-110.
+
+README                             -- Changed file.
+src/booth.cpp                      -- Changed file.
+src/core.cpp                       -- Changed file.
+test_apps/test3.c                  -- Changed file.
+
+#00052 michael pp Michael Dales (michael@dcs.gla.ac.uk) Mon Jan 22 14:08:09 GMT 2001
+------------------------------------------------------------------------------------
+Debugged the multiply instructions. Hopefully now correct.
+
+src/alu.cpp                        -- Changed file.
+src/booth.cpp                      -- Changed file.
+src/core.cpp                       -- Changed file.
+test_apps/test3.c                  -- Changed file.
+
+#00051 michael pp Michael Dales (michael@dcs.gla.ac.uk) Sun Jan 21 21:08:27 GMT 2001
+------------------------------------------------------------------------------------
+A few simple tests added for the multiply instructions in test3.c. Still needs
+more testing. Fixed argument marshalling which wasn't 64 bit clean.
+
+src/main.cpp                       -- Changed file.
+test_apps/test3.c                  -- Changed file.
+
+#00050 michael pp Michael Dales (michael@dcs.gla.ac.uk) Sat Jan 20 20:21:29 GMT 2001
+------------------------------------------------------------------------------------
+Added fast versions of all the multiply instructions. Needs testing though,
+especiall UMLAL and SMLAL.
+
+src/Makefile                       -- Changed file.
+src/booth.cpp                      ++ NEW FILE
+src/booth.h                        ++ NEW FILE
+src/core.cpp                       -- Changed file.
+src/core.h                         -- Changed file.
+test_apps/test3.c                  -- Changed file.
+
+#00049 michael pp Michael Dales (michael@dcs.gla.ac.uk) Mon Jan 15 17:30:38 GMT 2001
+------------------------------------------------------------------------------------
+Fixed bug in writing bytes to memory, which would corrupt the cache. Made
+core throw UDT on 64 bit multiplies. Corrected _str_errlist in libc.
+
+src/armproc.cpp                    -- Changed file.
+src/core.cpp                       -- Changed file.
+src/libc.cpp                       -- Changed file.
+test_apps/libc/include/errno.h     -- Changed file.
+test_apps/libc/string/__strerror.c -- Changed file.
+
+#00048 michael pp Michael Dales (michael@dcs.gla.ac.uk) Mon Jan  8 18:17:55 GMT 2001
+------------------------------------------------------------------------------------
+Added a large amount to the minimal libc implementation, to enable madplay mp3
+player to compile for SWARM. Extended the default amount of memory to 10 meg 
+to give madplay enough memory in which to work. Added code to pass extra 
+params given to SWARM to the test application running on swarm. Started to 
+add bits for proper MMU - but halted due to other demands on my time.
+
+src/Makefile                       -- Changed file.
+src/armproc.cpp                    -- Changed file.
+src/core.cpp                       -- Changed file.
+src/main.cpp                       -- Changed file.
+src/syscopro.cpp                   -- Changed file.
+test_apps/Makefile                 -- Changed file.
+test_apps/argstest.c               ++ NEW FILE
+test_apps/libc/Makefile            -- Changed file.
+test_apps/libc/crt0.S              -- Changed file.
+test_apps/libc/errno.c             XX Deleted file.
+test_apps/libc/gen                 ** NEW DIRECTORY
+test_apps/libc/gen/Makefile        ++ NEW FILE
+test_apps/libc/gen/errlist.c       ++ NEW FILE
+test_apps/libc/gen/errno.c         ++ NEW FILE
+test_apps/libc/include/errno.h     ++ NEW FILE
+test_apps/libc/include/getopt.h    ++ NEW FILE
+test_apps/libc/include/limits.h    ++ NEW FILE
+test_apps/libc/include/machine     ** NEW DIRECTORY
+test_apps/libc/include/machine/limits.h
+                                   ++ NEW FILE
+test_apps/libc/include/malloc.h    -- Changed file.
+test_apps/libc/include/stdio.h     -- Changed file.
+test_apps/libc/include/sys         ** NEW DIRECTORY
+test_apps/libc/include/sys/cdefs.h ++ NEW FILE
+test_apps/libc/include/sys/errno.h ++ NEW FILE
+test_apps/libc/include/sys/syslimits.h
+                                   ++ NEW FILE
+test_apps/libc/libc.S              -- Changed file.
+test_apps/libc/malloc/malloc.c     -- Changed file.
+test_apps/libc/stdio/Makefile      -- Changed file.
+test_apps/libc/stdio/fdopen.c      -- Changed file.
+test_apps/libc/stdio/fopen.c       -- Changed file.
+test_apps/libc/stdio/perror.c      ++ NEW FILE
+test_apps/libc/stdio/snprintf.c    ++ NEW FILE
+test_apps/libc/stdio/sprintf.c     ++ NEW FILE
+test_apps/libc/stdio/vfprintf.c    -- Changed file.
+test_apps/libc/stdlib              ** NEW DIRECTORY
+test_apps/libc/stdlib/Makefile     ++ NEW FILE
+test_apps/libc/stdlib/getopt.c     ++ NEW FILE
+test_apps/libc/string/Makefile     -- Changed file.
+test_apps/libc/string/__strerror.c ++ NEW FILE
+test_apps/libc/string/bcopy.S      ++ NEW FILE
+test_apps/libc/string/bzero.S      ++ NEW FILE
+test_apps/libc/string/index.c      ++ NEW FILE
+test_apps/libc/string/memmove.S    ++ NEW FILE
+test_apps/libc/string/memset.S     ++ NEW FILE
+test_apps/libc/string/memset.c     XX Deleted file.
+test_apps/libc/string/rindex.c     ++ NEW FILE
+test_apps/libc/string/strcat.c     ++ NEW FILE
+test_apps/libc/string/strchr.c     ++ NEW FILE
+test_apps/libc/string/strcmp.c     ++ NEW FILE
+test_apps/libc/string/strerror.c   ++ NEW FILE
+test_apps/libc/string/strncat.c    ++ NEW FILE
+test_apps/libc/string/strncmp.c    ++ NEW FILE
+test_apps/libc/string/strrchr.c    ++ NEW FILE
+
+#00047 michael pp Michael Dales (michael@dcs.gla.ac.uk) Fri Dec  8 14:30:50 GMT 2000
+------------------------------------------------------------------------------------
+Small change to exit of FIQ handler.
+
+test_apps/libc/vector.S            -- Changed file.
+
+
+#00047 michael pp Michael Dales (michael@dcs.gla.ac.uk) Fri Dec  8 14:16:35 GMT 2000
+------------------------------------------------------------------------------------
+Fixed bug that prevented data ops involving the pc working for anything more
+simple than a move. Rewrote the mode change routine. Added SPSR display in
+non-quiet mode.
+
+README                             -- Changed file.
+src/core.cpp                       -- Changed file.
+src/core.h                         -- Changed file.
+
+
+#00046 michael pp Michael Dales (michael@dcs.gla.ac.uk) Wed Dec  6 14:57:12 GMT 2000
+------------------------------------------------------------------------------------
+Extended LDM/STM to do the correct thing for the set bit. Added a few bug 
+fixes from Matt (matt@dcs.gla.ac.uk). Added coprocessor memory transfers.
+
+README                             -- Changed file.
+src/armproc.cpp                    -- Changed file.
+src/core.cpp                       -- Changed file.
+src/core.h                         -- Changed file.
+src/isa_le.h                       -- Changed file.
+src/main.cpp                       -- Changed file.
+src/swarm_macros.h                 -- Changed file.
+test_apps/libc/crt0.S              -- Changed file.
+
+#00045 michael pp Michael Dales (michael@dcs.gla.ac.uk) Mon Nov 20 14:59:36 GMT 2000
+------------------------------------------------------------------------------------
+Fixed a couple of bugs with mode changes.
+
+bin/src/disarm/main.c              -- Changed file.
+src/core.cpp                       -- Changed file.
+src/core.h                         -- Changed file.
+src/main.cpp                       -- Changed file.
+test_apps/libc/crt0.S              -- Changed file.
+test_apps/libc/vector.S            -- Changed file.
+
+#00044 michael pp Michael Dales (michael@dcs.gla.ac.uk) Fri Nov 10 14:23:14 GMT 2000
+------------------------------------------------------------------------------------
+Lots of changes here. Firstly added an OS timer and an interrupt controller
+to the processor model. These are based on those in the Intel SA-1110. In
+addition to interrupt handling, I had to add memory mapped devices to the 
+processor model. Because of all the mode changing with interrupts, I was 
+forced to tidy up my test app run time environment to make use of modes
+(hither to everything ran in SVC mode...).
+
+README                             -- Changed file.
+doc/src/Makefile                   -- Changed file.
+doc/src/swarm.tex                  -- Changed file.
+doc/swarm.pdf                      -- Changed file.
+src/Makefile                       -- Changed file.
+src/armproc.cpp                    -- Changed file.
+src/armproc.h                      -- Changed file.
+src/core.cpp                       -- Changed file.
+src/core.h                         -- Changed file.
+src/intctrl.cpp                    ++ NEW FILE
+src/intctrl.h                      ++ NEW FILE
+src/main.cpp                       -- Changed file.
+src/ostimer.cpp                    ++ NEW FILE
+src/ostimer.h                      ++ NEW FILE
+test_apps/Makefile                 -- Changed file.
+test_apps/libc/crt0.S              -- Changed file.
+test_apps/libc/irq_trap.S          -- Changed file.
+test_apps/libc/vector.S            -- Changed file.
+test_apps/timertest.c              ++ NEW FILE
+
+#00043 michael pp Michael Dales (michael@dcs.gla.ac.uk) Mon Nov  6 17:38:20 GMT 2000
+------------------------------------------------------------------------------------
+Updated disarm to use modified isa header file.
+
+README                             -- Changed file.
+bin/src/disarm/main.c              -- Changed file.
+src/isa_be.h                       -- Changed file.
+
+#00042 michael pp Michael Dales (michael@dcs.gla.ac.uk) Mon Nov  6 17:04:56 GMT 2000
+------------------------------------------------------------------------------------
+Added code to turn a swi call to SWARM that had an invalid number to 
+generate a UDT, and for instructions with a cond code of 0xF to also
+generate a UDT.
+
+README                             -- Changed file.
+src/Makefile                       -- Changed file.
+src/core.cpp                       -- Changed file.
+
+#00041 michael pp Michael Dales (michael@dcs.gla.ac.uk) Mon Nov  6 15:02:08 GMT 2000
+------------------------------------------------------------------------------------
+First pass at adding interrupts (IRQ and FIQ). Interrupts are always delayed
+by cache reads and multi-cycle instructions. Simple IRQ/FIQ handler which
+prints a message and then returns to the main code.
+
+src/Makefile                       -- Changed file.
+src/armproc.cpp                    -- Changed file.
+src/armproc.h                      -- Changed file.
+src/copro.h                        -- Changed file.
+src/core.cpp                       -- Changed file.
+src/core.h                         -- Changed file.
+src/main.cpp                       -- Changed file.
+test_apps/Makefile                 -- Changed file.
+test_apps/libc/Makefile            -- Changed file.
+test_apps/libc/irq_trap.S          ++ NEW FILE
+test_apps/libc/vector.S            -- Changed file.
+
+#00040 michael pp Michael Dales (michael@dcs.gla.ac.uk) Sun Nov  5 10:14:07 GMT 2000
+------------------------------------------------------------------------------------
+Added both MSR and MRS instructions. Corrected lower 5 bits of CPSR/SPSR to
+contain the mode info. Fixed a bug whereby the CPSR wasn't being modified
+in an ALU op - just overwritten.
+
+README                             -- Changed file.
+src/alu.cpp                        -- Changed file.
+src/core.cpp                       -- Changed file.
+src/core.h                         -- Changed file.
+src/disarm.cpp                     -- Changed file.
+src/isa_le.h                       -- Changed file.
+test_apps/Makefile                 -- Changed file.
+test_apps/cpsrtest.c               ++ NEW FILE
+
+#00039 michael pp Michael Dales (michael@dcs.gla.ac.uk) Wed Nov  1 14:55:28 GMT 2000
+------------------------------------------------------------------------------------
+Added mrc, and updated docs a bit.
+
+README                             -- Changed file.
+doc/src/swarm.tex                  -- Changed file.
+doc/swarm.pdf                      -- Changed file.
+src/core.cpp                       -- Changed file.
+src/syscopro.cpp                   -- Changed file.
+test_apps/dumptest.c               -- Changed file.
+test_apps/libc/include/swarm.h     -- Changed file.
+
+#00038 michael pp Michael Dales (michael@dcs.gla.ac.uk) Mon Oct 30 17:35:21 GMT 2000
+------------------------------------------------------------------------------------
+Added misc bits - debug dump from test apps now (see libc/include/swarm.h) and
+bug fixes from running DES test app. Included patch from matt@g141.com to
+size.pl which was outputting in the wrong base. Added debug dump.
+
+bin/scripts/size.pl                -- Changed file.
+src/Makefile                       -- Changed file.
+src/armproc.cpp                    -- Changed file.
+src/armproc.h                      -- Changed file.
+src/copro.h                        -- Changed file.
+src/core.cpp                       -- Changed file.
+src/core.h                         -- Changed file.
+src/main.cpp                       -- Changed file.
+src/swarm_macros.h                 -- Changed file.
+src/syscopro.cpp                   -- Changed file.
+src/syscopro.h                     -- Changed file.
+test_apps/Makefile                 -- Changed file.
+test_apps/dumptest.c               ++ NEW FILE
+test_apps/libc/Makefile            -- Changed file.
+test_apps/libc/include/swarm.h     ++ NEW FILE
+test_apps/libc/swarm.S             ++ NEW FILE
+
+#00038 michael pp Michael Dales (michael@dcs.gla.ac.uk) Tue Oct 24 16:48:59 BST 2000
+------------------------------------------------------------------------------------
+Changed SWARM so that on a bad address error, SWARM will dump the register
+contents for the processor core and any coprocessors. Not fully tested - 
+I fear that there is a legacy bug in CDisarm - but at the moment I'm busy
+will applications, so I'll tidy it up later.
+
+src/Makefile                       -- Changed file.
+src/armproc.cpp                    -- Changed file.
+src/armproc.h                      -- Changed file.
+src/copro.h                        -- Changed file.
+src/core.cpp                       -- Changed file.
+src/core.h                         -- Changed file.
+src/main.cpp                       -- Changed file.
+src/swarm_macros.h                 -- Changed file.
+src/syscopro.cpp                   -- Changed file.
+src/syscopro.h                     -- Changed file.
+
+#00037 michael pp Michael Dales (michael@dcs.gla.ac.uk) Sun Oct  8 19:16:11 BST 2000
+------------------------------------------------------------------------------------
+Moved rpcc definition to profile.h, removed filter.s (mistake) and updated 
+test5.c to use profile.h
+
+test_apps/filter.s                 XX Deleted file.
+test_apps/libc/include/profile.h   ++ NEW FILE
+test_apps/test5.c                  -- Changed file.
+
+#00036 michael pp Michael Dales (michael@dcs.gla.ac.uk) Thu Oct  5 22:57:04 BST 2000
+------------------------------------------------------------------------------------
+First working coprocessor!!!! It's not the prettiest piece of logic every,
+but it works. I'm a tocuh tired, so I may try and improve on it at some
+point, but essentially it just works. The system coprocessor register 0xB
+includes the cycle counter. Test5 has the rpcc macro to read the value
+of the cycle counter into a C variable. Funky. Think I just wore out
+my copy of Kid A getting this to work :-)
+
+src/armproc.cpp                    -- Changed file.
+src/copro.h                        -- Changed file.
+src/core.cpp                       -- Changed file.
+src/syscopro.cpp                   -- Changed file.
+src/syscopro.h                     -- Changed file.
+test_apps/Makefile                 -- Changed file.
+test_apps/test4.c                  -- Changed file.
+test_apps/test5.c                  ++ NEW FILE
+
+#00035 michael pp Michael Dales (michael@dcs.gla.ac.uk) Wed Oct  4 17:12:36 BST 2000
+------------------------------------------------------------------------------------
+Interm release ;-) Start of the coprocessor's appearance, both as an abstract
+interface and with the system coprocessor as an example. Also added some bits
+to libc so that I could run a test app I wanted. inttypes.h is incomplete.
+
+src/Makefile                       -- Changed file.
+src/alu.cpp                        -- Changed file.
+src/armproc.cpp                    -- Changed file.
+src/armproc.h                      -- Changed file.
+src/copro.cpp                      ++ NEW FILE
+src/copro.h                        ++ NEW FILE
+src/core.cpp                       -- Changed file.
+src/core.h                         -- Changed file.
+src/main.cpp                       -- Changed file.
+src/syscopro.cpp                   ++ NEW FILE
+src/syscopro.h                     ++ NEW FILE
+test_apps/libc/Makefile            -- Changed file.
+test_apps/libc/include/inttypes.h  ++ NEW FILE
+test_apps/libc/include/stdio.h     -- Changed file.
+test_apps/libc/libc.S              -- Changed file.
+test_apps/libc/stdio/Makefile      -- Changed file.
+test_apps/libc/stdio/printf.c      ++ NEW FILE
+test_apps/libc/stdio/vprintf.c     ++ NEW FILE
+test_apps/libc/string/Makefile     -- Changed file.
+test_apps/libc/string/memset.c     ++ NEW FILE
+
+#00034 michael pp Michael Dales (michael@dcs.gla.ac.uk) Fri Sep  1 14:23:24 BST 2000
+------------------------------------------------------------------------------------
+Added undefined instruction traps to SWARM, and modified the support code for
+test apps to include a vector table at the start.
+
+README                             -- Changed file.
+doc/src/swarm.tex                  -- Changed file.
+doc/swarm.pdf                      -- Changed file.
+src/core.cpp                       -- Changed file.
+src/core.h                         -- Changed file.
+test_apps/Makefile                 -- Changed file.
+test_apps/libc/Makefile            -- Changed file.
+test_apps/libc/libgcc.S            XX Deleted file.
+test_apps/libc/undef_trap.S        ++ NEW FILE
+test_apps/libc/vector.S            ++ NEW FILE
+
+#00033 michael pp Michael Dales (michael@dcs.gla.ac.uk) Tue Aug 15 22:18:05 BST 2000
+------------------------------------------------------------------------------------
+Made SWARM use two cycles for a data processing instruction where the shift
+amount is specfied by a register (i.e. made it cycle accurate).
+
+README                             -- Changed file.
+src/core.cpp                       -- Changed file.
+src/core.h                         -- Changed file.
+
+#00032 michael pp Michael Dales (michael@dcs.gla.ac.uk) Tue Aug  8 19:48:30 BST 2000
+------------------------------------------------------------------------------------
+Fixed bugs in both caches and byte writes. Note that accessing a swi upcall
+into SWARM now flushes the cache(s) - this needs a better solution, but
+it works for now. This was a problem if you did a read into a the stack
+for instance. Byte writes were broken too, but I fixed that.
+
+README                             -- Changed file.
+doc/src/swarm.tex                  -- Changed file.
+doc/swarm.pdf                      -- Changed file.
+src/armproc.cpp                    -- Changed file.
+src/core.cpp                       -- Changed file.
+src/core.h                         -- Changed file.
+src/libc.cpp                       -- Changed file.
+
+#00031 michael pp Michael Dales (michael@dcs.gla.ac.uk) Tue Aug  1 17:36:38 BST 2000
+------------------------------------------------------------------------------------
+Added some libc functions (stat, fstat, lstat, memchr, strlen).
+
+README                             -- Changed file.
+doc/src/swarm.tex                  -- Changed file.
+doc/swarm.pdf                      -- Changed file.
+src/libc.cpp                       -- Changed file.
+src/libc.h                         -- Changed file.
+src/main.cpp                       -- Changed file.
+test_apps/libc/Makefile            -- Changed file.
+test_apps/libc/libc.S              -- Changed file.
+test_apps/libc/string/Makefile     -- Changed file.
+test_apps/libc/string/memchr.c     ++ NEW FILE
+test_apps/libc/string/strlen.c     ++ NEW FILE
+test_apps/test4.c                  -- Changed file.
+
+#00030 michael pp Michael Dales (michael@dcs.gla.ac.uk) Fri Jul  7 19:09:06 BST 2000
+------------------------------------------------------------------------------------
+Always forget to update the docs...
+
+doc/src/swarm.tex                  -- Changed file.
+doc/swarm.pdf                      -- Changed file.
+
+#00029 michael pp Michael Dales (michael@dcs.gla.ac.uk) Fri Jul  7 19:02:40 BST 2000
+------------------------------------------------------------------------------------
+Fixed some bugs in SWARM, mainly as part of getting vfprintf to work. Confused
+myself completely as to carry bits on subtract, which I broke, then fixed
+again.
+
+src/Makefile                       -- Changed file.
+src/alu.cpp                        -- Changed file.
+src/core.cpp                       -- Changed file.
+src/libc.cpp                       -- Changed file.
+test_apps/Makefile                 -- Changed file.
+test_apps/README                   -- Changed file.
+test_apps/libc/Makefile            -- Changed file.
+test_apps/libc/crt0.S              ++ NEW FILE
+test_apps/libc/include/stdio.h     -- Changed file.
+test_apps/libc/malloc/Makefile     -- Changed file.
+test_apps/libc/malloc/malloc.c     -- Changed file.
+test_apps/libc/stdio/Makefile      -- Changed file.
+test_apps/libc/stdio/vfprintf.c    -- Changed file.
+test_apps/libc/string/Makefile     -- Changed file.
+test_apps/start.S                  XX Deleted file.
+test_apps/test4.c                  -- Changed file.
+test_apps/vtest.c                  ++ NEW FILE
+
+#00028 michael pp Michael Dales (michael@dcs.gla.ac.uk) Thu Jun 15 00:45:00 BST 2000
+------------------------------------------------------------------------------------
+Work in progress. Made a cleaner libc for the test apps. Tided directories.
+Added stdio too.
+
+src/libc.cpp                       -- Changed file.
+src/libc.h                         -- Changed file.
+src/main.cpp                       -- Changed file.
+test_apps/Makefile                 -- Changed file.
+test_apps/_memcpy.S                XX Deleted file.
+test_apps/asm.h                    XX Deleted file.
+test_apps/include                  XX Deleted directory.
+test_apps/include/malloc.h         XX Deleted file.
+test_apps/include/stdlib.h         XX Deleted file.
+test_apps/include/sys              XX Deleted directory.
+test_apps/include/sys/types.h      XX Deleted file.
+test_apps/libc                     ** NEW DIRECTORY
+test_apps/libc.S                   XX Deleted file.
+test_apps/libc/Makefile            ++ NEW FILE
+test_apps/libc/errno.c             ++ NEW FILE
+test_apps/libc/include             ** NEW DIRECTORY
+test_apps/libc/include/asm.h       ++ NEW FILE
+test_apps/libc/include/malloc.h    ++ NEW FILE
+test_apps/libc/include/stdio.h     ++ NEW FILE
+test_apps/libc/libc.S              ++ NEW FILE
+test_apps/libc/libgcc.S            ++ NEW FILE
+test_apps/libc/malloc              ** NEW DIRECTORY
+test_apps/libc/malloc/Makefile     ++ NEW FILE
+test_apps/libc/malloc/malloc.c     ++ NEW FILE
+test_apps/libc/stdio               ** NEW DIRECTORY
+test_apps/libc/stdio/Makefile      ++ NEW FILE
+test_apps/libc/stdio/clearerr.c    ++ NEW FILE
+test_apps/libc/stdio/fclose.c      ++ NEW FILE
+test_apps/libc/stdio/fdopen.c      ++ NEW FILE
+test_apps/libc/stdio/ferror.c      ++ NEW FILE
+test_apps/libc/stdio/fflush.c      ++ NEW FILE
+test_apps/libc/stdio/fileno.c      ++ NEW FILE
+test_apps/libc/stdio/fopen.c       ++ NEW FILE
+test_apps/libc/stdio/fprintf.c     ++ NEW FILE
+test_apps/libc/stdio/fputc.c       ++ NEW FILE
+test_apps/libc/stdio/fread.c       ++ NEW FILE
+test_apps/libc/stdio/fseek.c       ++ NEW FILE
+test_apps/libc/stdio/ftell.c       ++ NEW FILE
+test_apps/libc/stdio/fwrite.c      ++ NEW FILE
+test_apps/libc/stdio/init_stdio.c  ++ NEW FILE
+test_apps/libc/stdio/rewind.c      ++ NEW FILE
+test_apps/libc/stdio/vfprintf.c    ++ NEW FILE
+test_apps/libc/string              ** NEW DIRECTORY
+test_apps/libc/string/Makefile     ++ NEW FILE
+test_apps/libc/string/_memcpy.S    ++ NEW FILE
+test_apps/libc/string/memcpy.S     ++ NEW FILE
+test_apps/libgcc.S                 XX Deleted file.
+test_apps/malloc.c                 XX Deleted file.
+test_apps/malloc.h                 XX Deleted file.
+test_apps/memcpy.S                 XX Deleted file.
+test_apps/test4.c                  ++ NEW FILE
+
+#00027 michael pp Michael Dales (michael@dcs.gla.ac.uk) Mon May 22 10:39:50 BST 2000
+------------------------------------------------------------------------------------
+Added a second type of cache so I can do some little comparison experiments. 
+Changed the interface between CArmProc and CCache to be less of a hack. Now
+uses cache lines poperly.
+
+INSTALL                            -- Changed file.
+README                             -- Changed file.
+doc/src/Makefile                   -- Changed file.
+doc/src/swarm.tex                  -- Changed file.
+doc/swarm.pdf                      -- Changed file.
+src/Makefile                       -- Changed file.
+src/armproc.cpp                    -- Changed file.
+src/armproc.h                      -- Changed file.
+src/associative.cpp                ++ NEW FILE
+src/associative.h                  ++ NEW FILE
+src/cache.h                        -- Changed file.
+src/direct.cpp                     -- Changed file.
+src/direct.h                       -- Changed file.
+src/main.cpp                       -- Changed file.
+src/test_code.h                    XX Deleted file.
+
+#00026 michael pp Michael Dales (michael@dcs.gla.ac.uk) Tue May 16 02:40:45 BST 2000
+------------------------------------------------------------------------------------
+Added a more functional and cohesive libc. Added basic dynamic memory bits, and 
+moved it all into libswarmc.a when built. Some bug fixes. 
+
+doc/src/swarm.tex                  -- Changed file.
+doc/swarm.pdf                      -- Changed file.
+src/alu.cpp                        -- Changed file.
+src/armproc.cpp                    -- Changed file.
+src/core.cpp                       -- Changed file.
+src/main.cpp                       -- Changed file.
+test_apps/Makefile                 -- Changed file.
+test_apps/filter.c                 -- Changed file.
+test_apps/filter.s                 ++ NEW FILE
+test_apps/include                  ** NEW DIRECTORY
+test_apps/include/malloc.h         ++ NEW FILE
+test_apps/include/stdlib.h         ++ NEW FILE
+test_apps/include/sys              ** NEW DIRECTORY
+test_apps/include/sys/types.h      ++ NEW FILE
+test_apps/libgcc.S                 -- Changed file.
+test_apps/malloc.c                 ++ NEW FILE
+test_apps/malloc.h                 ++ NEW FILE
+test_apps/start.S                  ++ NEW FILE
+
+#00025 michael pp Michael Dales (michael@dcs.gla.ac.uk) Fri May 12 16:22:10 BST 2000
+------------------------------------------------------------------------------------
+Whoops. Forgot to turn off some debugging and move a #define...
+
+doc/src/swarm.tex                  -- Changed file.
+doc/swarm.pdf                      -- Changed file.
+src/direct.cpp                     -- Changed file.
+src/main.cpp                       -- Changed file.
+
+#00024 michael pp Michael Dales (michael@dcs.gla.ac.uk) Fri May 12 15:32:01 BST 2000
+------------------------------------------------------------------------------------
+Made the cache write trhu (which it should have been, but I'd forgotten). Moved
+the documentation from postscript to pdf.
+
+doc/src/swarm.tex                  -- Changed file.
+doc/swarm.pdf                      ++ NEW FILE
+doc/swarm.ps                       XX Deleted file.
+src/armproc.cpp                    -- Changed file.
+src/direct.cpp                     -- Changed file.
+src/main.cpp                       -- Changed file.
+
+#00023 michael pp Michael Dales (michael@dcs.gla.ac.uk) Wed May 10 18:30:16 BST 2000
+------------------------------------------------------------------------------------
+Fixed a rather embarrasing memory leak in core.cpp. Modified the debug new and
+delete macros to work with memcheck.pl to help find memory that's not being
+freed.
+
+bin/scripts/memcheck.pl            ++ NEW FILE
+doc/src/swarm.tex                  -- Changed file.
+doc/swarm.ps                       -- Changed file.
+src/Makefile                       -- Changed file.
+src/core.cpp                       -- Changed file.
+src/main.cpp                       -- Changed file.
+src/swarm_macros.h                 -- Changed file.
+
+#00022 michael pp Michael Dales (michael@dcs.gla.ac.uk) Mon May  8 00:30:42 BST 2000
+------------------------------------------------------------------------------------
+Included patch from Eric (emschwar@rmi.net) that added Debian support to 
+the arch script. This has no effect what-so-ever on SWARM as it won't use
+this info, but it's nice to be complete.
+
+bin/scripts/arch                   -- Changed file.
+doc/src/swarm.tex                  -- Changed file.
+doc/swarm.ps                       -- Changed file.
+src/Makefile                       -- Changed file.
+
+#00021 michael pp Michael Dales (michael@dcs.gla.ac.uk) Thu May  4 14:49:32 BST 2000
+------------------------------------------------------------------------------------
+Fixed 2 bugs to do with multiply by -1. Added new test program filter.c, which
+is a more advanced version of test2.c (which I may remove later).
+
+doc/src/swarm.tex                  -- Changed file.
+doc/swarm.ps                       -- Changed file.
+src/Makefile                       -- Changed file.
+src/core.cpp                       -- Changed file.
+test_apps/Makefile                 -- Changed file.
+test_apps/README                   -- Changed file.
+test_apps/filter.c                 ++ NEW FILE
+test_apps/test2.c                  -- Changed file.
+
+#00020 michael pp Michael Dales (michael@dcs.gla.ac.uk) Wed May  3 14:19:38 BST 2000
+------------------------------------------------------------------------------------
+Added a few doc changes.
+
+README                             -- Changed file.
+doc/src/swarm.tex                  -- Changed file.
+doc/swarm.ps                       -- Changed file.
+test_apps/README                   ++ NEW FILE
+
+#00019 michael pp Michael Dales (michael@dcs.gla.ac.uk) Wed May  3 13:46:47 BST 2000
+------------------------------------------------------------------------------------
+Updated documentation to point out the inactive disarm stuff.
+
+doc/src/swarm.tex                  -- Changed file.
+doc/swarm.ps                       -- Changed file.
+
+#00018 michael pp Michael Dales (michael@dcs.gla.ac.uk) Wed May  3 13:37:17 BST 2000
+------------------------------------------------------------------------------------
+Fixed two obscure bugs (CArmCore::DecodeMult failed to set UPDATE_PC and
+multiply aborted early if m_regMult == 0 but m_bMultCarry == 1). Started to
+integrate DisARM into SWARM, but commented out for now as incomplete. 
+
+bin/src/disarm/main.c              -- Changed file.
+src/Makefile                       -- Changed file.
+src/core.cpp                       -- Changed file.
+src/disarm.cpp                     ++ NEW FILE
+src/disarm.h                       ++ NEW FILE
+src/main.cpp                       -- Changed file.
+test_apps/test2.c                  -- Changed file.
+
+#00017 michael pp Michael Dales (michael@dcs.gla.ac.uk) Thu Apr 27 17:13:39 BST 2000
+------------------------------------------------------------------------------------
+Move the documentation into the source tree too.
+
+doc/src                            ** NEW DIRECTORY
+doc/src/Makefile                   ++ NEW FILE
+doc/src/agsm.bst                   ++ NEW FILE
+doc/src/pics                       ** NEW DIRECTORY
+doc/src/pics/README                ++ NEW FILE
+doc/src/pics/arm6blk.eps           ++ NEW FILE
+doc/src/pics/arm6blk.obj           ++ NEW FILE
+doc/src/pics/mem.eps               ++ NEW FILE
+doc/src/pics/mem.obj               ++ NEW FILE
+doc/src/pics/state.eps             ++ NEW FILE
+doc/src/pics/state.obj             ++ NEW FILE
+doc/src/swarm.bib                  ++ NEW FILE
+doc/src/swarm.tex                  ++ NEW FILE
+doc/src/ukdate.sty                 ++ NEW FILE
+doc/swarm.ps                       ++ NEW FILE
+
+#00016 michael pp Michael Dales (michael@dcs.gla.ac.uk) Thu Apr 27 15:37:38 BST 2000
+------------------------------------------------------------------------------------
+Misc small updates.
+
+INSTALL                            ++ NEW FILE
+README                             -- Changed file.
+test_apps/Makefile                 -- Changed file.
+
+#00015 michael pp Michael Dales (michael@dcs.gla.ac.uk) Thu Apr 27 11:05:30 BST 2000
+------------------------------------------------------------------------------------
+Fixed the make file to support both optimised and debug builds. Corrected 
+instruction timings for multiply instruction.
+
+src/Makefile                       -- Changed file.
+src/core.cpp                       -- Changed file.
+test_apps/Makefile                 -- Changed file.
+
+#00014 michael pp Michael Dales (michael@dcs.gla.ac.uk) Wed Apr 26 16:11:45 BST 2000
+------------------------------------------------------------------------------------
+Changed sample data to something that could be distributed.
+
+test_apps/Makefile                 -- Changed file.
+test_apps/data                     XX Deleted directory.
+test_apps/data/G4Mac.bmp           XX Deleted file.
+test_apps/data/coffee.bmp          ++ NEW FILE
+test_apps/data/mailto.bmp          XX Deleted file.
+test_apps/test2.c                  -- Changed file.
+test_apps/test4.c                  XX Deleted file.
+
+#00013 michael pp Michael Dales (michael@dcs.gla.ac.uk) Wed Apr 26 15:33:34 BST 2000
+------------------------------------------------------------------------------------
+Made the code 64 bit clean. Updates the MSVC project file. Compiles using the
+Compaq C++ for Alpha Linux (runs faster than G++ on Alpha Linux).
+
+msvc/swarm.dsp                     -- Changed file.
+msvc/swarm.ncb                     -- Changed file.
+msvc/swarm.opt                     -- Changed file.
+msvc/swarm.plg                     -- Changed file.
+src/Makefile                       -- Changed file.
+src/core.cpp                       -- Changed file.
+src/libc.cpp                       -- Changed file.
+src/libc.h                         -- Changed file.
+src/main.cpp                       -- Changed file.
+src/swarm.cpp                      -- Changed file.
+src/swarm_types.h                  -- Changed file.
+test_apps/test2.c                  -- Changed file.
+
+#00012 michael pp Michael Dales (michael@dcs.gla.ac.uk) Tue Apr 25 16:10:13 BST 2000
+------------------------------------------------------------------------------------
+Subtle bug fixes. Byte memory addressing mainly.
+
+bin/scripts/arch                   ++ NEW FILE
+bin/src/disarm/Makefile            -- Changed file.
+src/Makefile                       -- Changed file.
+src/alu.cpp                        -- Changed file.
+src/armproc.cpp                    -- Changed file.
+src/core.cpp                       -- Changed file.
+src/core.h                         -- Changed file.
+src/libc.cpp                       ++ NEW FILE
+src/libc.h                         ++ NEW FILE
+src/main.cpp                       -- Changed file.
+src/swarm.h                        -- Changed file.
+src/swi.h                          -- Changed file.
+test_apps/Makefile                 -- Changed file.
+test_apps/data                     ** NEW DIRECTORY
+test_apps/data/G4Mac.bmp           ++ NEW FILE
+test_apps/data/mailto.bmp          ++ NEW FILE
+test_apps/libc.S                   ++ NEW FILE
+test_apps/test2.c                  ++ NEW FILE
+test_apps/test4.c                  ++ NEW FILE
+
+#00011 michael pp Michael Dales (michael@dcs.gla.ac.uk) Thu Apr 13 13:01:54 BST 2000
+------------------------------------------------------------------------------------
+Added the disarm disassembler. Provided GPL licence file.
+
+COPYING                            ++ NEW FILE
+README                             ++ NEW FILE
+bin/Makefile                       ++ NEW FILE
+bin/src                            ** NEW DIRECTORY
+bin/src/Makefile                   ++ NEW FILE
+bin/src/disarm                     ** NEW DIRECTORY
+bin/src/disarm/Makefile            ++ NEW FILE
+bin/src/disarm/main.c              ++ NEW FILE
+src/swarm.h                        -- Changed file.
+src/swarm_types.h                  -- Changed file.
+
+#00010 michael pp Michael Dales (michael@dcs.gla.ac.uk) Tue Apr 11 15:52:29 BST 2000
+------------------------------------------------------------------------------------
+Lots of bugs fixed here. All little errors that came out when I started to use real
+code in the system. The memcpy routine here is taken from NetBSD 1.4.1. Real,
+non-trivial code, now works!
+
+bin/scripts/size.pl                -- Changed file.
+src/alu.cpp                        -- Changed file.
+src/armproc.cpp                    -- Changed file.
+src/armproc.h                      -- Changed file.
+src/core.cpp                       -- Changed file.
+src/core.h                         -- Changed file.
+src/direct.cpp                     -- Changed file.
+src/direct.h                       -- Changed file.
+src/main.cpp                       -- Changed file.
+src/swarm.cpp                      -- Changed file.
+test_apps/Makefile                 -- Changed file.
+test_apps/_memcpy.S                ++ NEW FILE
+test_apps/asm.h                    ++ NEW FILE
+test_apps/libgcc.S                 -- Changed file.
+test_apps/memcpy.S                 ++ NEW FILE
+test_apps/test3.c                  ++ NEW FILE
+
+#00009 michael pp Michael Dales (michael@dcs.gla.ac.uk) Thu Apr  6 21:51:40 BST 2000
+------------------------------------------------------------------------------------
+Much improved version. Now started to use the ARM gcc and some munging to 
+produce binaries to run in SWARM. This has lead to some features being added
+(e.g. mov pc, *) and a slew of bugs being found. In the test_apps dir is
+a simple libgcc to link raw apps against. Not quite libc, but better than
+a kick in the teeth :-)
+
+bin                                ** NEW DIRECTORY
+bin/scripts                        ** NEW DIRECTORY
+bin/scripts/size.pl                ++ NEW FILE
+src/core.cpp                       -- Changed file.
+src/core.h                         -- Changed file.
+src/main.cpp                       -- Changed file.
+test_apps                          ** NEW DIRECTORY
+test_apps/Makefile                 ++ NEW FILE
+test_apps/libgcc.S                 ++ NEW FILE
+test_apps/test1.c                  ++ NEW FILE
+
+#00008 michael pp Michael Dales (michael@dcs.gla.ac.uk) Tue Apr  4 19:25:30 BST 2000
+------------------------------------------------------------------------------------
+Added load multiple too. Fixed a bug in the datapath that bypassed the 
+data in buffer.
+
+src/core.cpp                       -- Changed file.
+src/test_code.h                    -- Changed file.
+
+#00007 michael pp Michael Dales (michael@dcs.gla.ac.uk) Tue Apr  4 16:54:11 BST 2000
+------------------------------------------------------------------------------------
+Fixed the datapath to be more realistic. Added store multiple.
+
+src/core.cpp                       -- Changed file.
+src/test_code.h                    -- Changed file.
+
+#00006 michael pp Michael Dales (michael@dcs.gla.ac.uk) Mon Apr  3 10:36:54 BST 2000
+------------------------------------------------------------------------------------
+Started to add Load/Store multiple, but it's wrong. Store works, but it doesn't
+do it like it should. The datapath needs a bit of reworking. This checkin is
+basically to allow me to revert if I break too much while trying to fix it.
+
+src/Makefile                       -- Changed file.
+src/core.cpp                       -- Changed file.
+src/core.h                         -- Changed file.
+src/swarm_macros.h                 -- Changed file.
+src/test_code.h                    -- Changed file.
+
+#00005 michael pp Michael Dales (michael@dcs.gla.ac.uk) Tue Mar 21 14:35:22 GMT 2000
+------------------------------------------------------------------------------------
+Make swarm++ under MS Visual C++. Fixed any problems so it now works under
+g++ and windows on ix86.
+
+msvc                               ** NEW DIRECTORY
+msvc/swarm.dsp                     ++ NEW FILE
+msvc/swarm.dsw                     ++ NEW FILE
+msvc/swarm.ncb                     ++ NEW FILE
+msvc/swarm.opt                     ++ NEW FILE
+msvc/swarm.plg                     ++ NEW FILE
+src/armproc.h                      -- Changed file.
+src/core.cpp                       -- Changed file.
+src/core.h                         -- Changed file.
+src/direct.cpp                     -- Changed file.
+src/main.cpp                       -- Changed file.
+src/swarm_macros.h                 -- Changed file.
+src/swarm_types.h                  -- Changed file.
+
+#00004 michael pp Michael Dales (michael@dcs.gla.ac.uk) Mon Mar 20 17:45:50 GMT 2000
+------------------------------------------------------------------------------------
+Added GPL licence to al the files.
+
+src/Makefile                       -- Changed file.
+src/alu.cpp                        -- Changed file.
+src/alu.h                          -- Changed file.
+src/armproc.cpp                    -- Changed file.
+src/armproc.h                      -- Changed file.
+src/cache.cpp                      -- Changed file.
+src/cache.h                        -- Changed file.
+src/core.cpp                       -- Changed file.
+src/core.h                         -- Changed file.
+src/direct.cpp                     -- Changed file.
+src/direct.h                       -- Changed file.
+src/isa.h                          -- Changed file.
+src/isa_be.h                       -- Changed file.
+src/isa_le.h                       -- Changed file.
+src/main.cpp                       -- Changed file.
+src/swarm.cpp                      -- Changed file.
+src/swarm.h                        -- Changed file.
+src/swarm_macros.h                 -- Changed file.
+src/swarm_types.h                  -- Changed file.
+src/swi.cpp                        -- Changed file.
+src/swi.h                          -- Changed file.
+src/test_code.h                    -- Changed file.
+
+#00003 michael pp Michael Dales (michael@dcs.gla.ac.uk) Mon Mar 20 14:14:57 GMT 2000
+------------------------------------------------------------------------------------
+First version that actually works with the new hierarchy. 
+
+src/Makefile                       -- Changed file.
+src/armproc.cpp                    -- Changed file.
+src/armproc.h                      -- Changed file.
+src/core.cpp                       -- Changed file.
+src/core.h                         -- Changed file.
+src/main.cpp                       -- Changed file.
+src/test_code.h                    -- Changed file.
+
+#00002 michael pp Michael Dales (michael@dcs.gla.ac.uk) Sun Mar 19 22:57:51 GMT 2000
+------------------------------------------------------------------------------------
+C++ version of swarm. Half full working version with proper component 
+hierarchy.
+
+src                                ** NEW DIRECTORY
+src/Makefile                       ++ NEW FILE
+src/alu.cpp                        ++ NEW FILE
+src/alu.h                          ++ NEW FILE
+src/armproc.cpp                    ++ NEW FILE
+src/armproc.h                      ++ NEW FILE
+src/cache.cpp                      ++ NEW FILE
+src/cache.h                        ++ NEW FILE
+src/core.cpp                       ++ NEW FILE
+src/core.h                         ++ NEW FILE
+src/direct.cpp                     ++ NEW FILE
+src/direct.h                       ++ NEW FILE
+src/isa.h                          ++ NEW FILE
+src/isa_be.h                       ++ NEW FILE
+src/isa_le.h                       ++ NEW FILE
+src/main.cpp                       ++ NEW FILE
+src/swarm.cpp                      ++ NEW FILE
+src/swarm.h                        ++ NEW FILE
+src/swarm_macros.h                 ++ NEW FILE
+src/swarm_types.h                  ++ NEW FILE
+src/swi.cpp                        ++ NEW FILE
+src/swi.h                          ++ NEW FILE
+src/test_code.h                    ++ NEW FILE
+
